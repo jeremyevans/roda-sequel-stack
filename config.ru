@@ -17,6 +17,6 @@ unless dev
   rescue LoadError
   else
     require 'tilt/sass' unless File.exist?(File.expand_path('../compiled_assets.json', __FILE__))
-    Refrigerator.freeze_core
+    Refrigerator.freeze_core(:except=>['Object'])
   end
 end
