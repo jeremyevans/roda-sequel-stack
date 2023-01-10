@@ -81,7 +81,11 @@ class App < Roda
     #cookie_options: {secure: ENV['RACK_ENV'] != 'test'}, # Uncomment if only allowing https:// access
     secret: ENV.send((ENV['RACK_ENV'] == 'development' ? :[] : :delete), 'APP_SESSION_SECRET')
 
-  Unreloader.require('routes', :delete_hook=>proc{|f| hash_branch(File.basename(f).delete_suffix('.rb'))}){}
+  if Unreloader.autoload?
+    plugin :autoload_hash_branches
+    autoload_hash_branch_dir('./routes')
+  end
+  Unreloader.autoload('routes', :delete_hook=>proc{|f| hash_branch(File.basename(f).delete_suffix('.rb'))}){}
 
   route do |r|
     r.public

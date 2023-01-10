@@ -11,10 +11,10 @@ Sequel::Model.plugin :subclasses unless ENV['RACK_ENV'] == 'development'
 
 unless defined?(Unreloader)
   require 'rack/unreloader'
-  Unreloader = Rack::Unreloader.new(reload: false)
+  Unreloader = Rack::Unreloader.new(reload: false, autoload: !ENV['NO_AUTOLOAD'])
 end
 
-Unreloader.require('models'){|f| Sequel::Model.send(:camelize, File.basename(f).sub(/\.rb\z/, ''))}
+Unreloader.autoload('models'){|f| Sequel::Model.send(:camelize, File.basename(f).sub(/\.rb\z/, ''))}
 
 if ENV['RACK_ENV'] == 'development' || ENV['RACK_ENV'] == 'test'
   require 'logger'

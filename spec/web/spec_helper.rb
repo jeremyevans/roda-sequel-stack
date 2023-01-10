@@ -11,13 +11,6 @@ Gem.suffix_pattern
 
 require_relative '../minitest_helper'
 
-begin
-  require 'refrigerator'
-rescue LoadError
-else
-  Refrigerator.freeze_core
-end
-
 App.plugin :not_found do
   raise "404 - File Not Found"
 end
@@ -25,7 +18,8 @@ App.plugin :error_handler do |e|
   raise e
 end
 
-Capybara.app = App.freeze.app
+App.freeze if ENV['NO_AUTOLOAD']
+Capybara.app = App.app
 Capybara.exact = true
 
 class Minitest::HooksSpec

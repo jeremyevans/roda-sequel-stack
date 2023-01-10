@@ -7,6 +7,7 @@ require 'uri'
 require 'find'
 
 TEST_STACK_DIR = 'test-stack'.freeze
+RUBY = ENV['RUBY'] || 'ruby'
 RAKE = ENV['RAKE'] || 'rake'
 RACKUP = ENV['RACKUP'] || 'rackup'
 SEQUEL = ENV['SEQUEL'] || 'sequel'
@@ -43,9 +44,9 @@ describe 'roda-sequel-stack' do
     end
   end
 
-  def run_rackup
+  def run_rackup(*args)
     read, write = IO.pipe
-    args = [RACKUP, '-e', '$stderr.sync = $stdout.sync = true']
+    args = [RACKUP, '-e', '$stderr.sync = $stdout.sync = true', *args]
     command(args)
     pid = Process.spawn(*args, out: write, err: write)
     read.each_line do |line|
@@ -127,7 +128,7 @@ describe 'roda-sequel-stack' do
       rewrite('routes/prefix1.rb'){|s| s.sub("# /prefix1 branch handling", "r.get{view 'p1'}")}
       run_cmd(SEQUEL, db_url, '-c', "DB[:model1s].insert(name: 'M1')")
 
-      # Test basic running
+      # Test running in development mode
       run_rackup
 
       # Test annotation
@@ -139,12 +140,16 @@ describe 'roda-sequel-stack' do
           gsub("#require", "require").
           sub('#Gem', 'Gem')
       end
-      run_rackup
+      run_rackup('-E', 'production', '-s', 'webrick')
 
-      # Test running specs
+      # Test running full specs
       run_cmd(RAKE)
       run_cmd(RAKE, 'model_spec')
       run_cmd(RAKE, 'web_spec')
+
+      # Test running individual spec files
+      run_cmd(RUBY, 'spec/model/model1_spec.rb')
+      run_cmd(RUBY, 'spec/web/prefix1_spec.rb')
 
       unless RUBY_ENGINE == 'jruby'
         # Test running coverage
