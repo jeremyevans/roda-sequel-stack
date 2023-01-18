@@ -7,7 +7,7 @@ require 'uri'
 require 'find'
 
 TEST_STACK_DIR = 'test-stack'.freeze
-RUBY = ENV['RUBY'] || 'ruby'
+RUBY = ENV['RUBY'] || (RUBY_ENGINE == 'jruby' ? 'jruby' : 'ruby')
 RAKE = ENV['RAKE'] || 'rake'
 RACKUP = ENV['RACKUP'] || 'rackup'
 SEQUEL = ENV['SEQUEL'] || 'sequel'
@@ -26,12 +26,14 @@ describe 'roda-sequel-stack' do
   end
 
   if RUBY_ENGINE == 'jruby'
-    JRUBY = ENV['JRUBY'] || 'jruby'
     db_url = 'jdbc:sqlite:db.sqlite3_test'
     def command(args)
-      unless args[0] == 'git'
+      case args[0]
+      when 'git', RUBY
+        # nothing
+      else
         args.unshift('-S')
-        args.unshift(JRUBY)
+        args.unshift(RUBY)
       end
       progress(args)
       args
