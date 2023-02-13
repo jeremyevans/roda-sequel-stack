@@ -80,6 +80,10 @@ flash :: Support flash messages (available in next request)
 assets :: Allow use of SCSS for styling, automatically converting to CSS
 render :: Allow use of ERB templates, with HTML escaping by default
 public :: Serve files in public directory
+Integer_matcher_max :: Limit maximum integer that will be matched by the Integer
+                       matcher
+typecast_params_sized_integers :: Limit maximum integer that will be matched using
+                                  typecast_params
 hash_branch_view_subdir :: Split routing tree by top-level branch, with a separate
                            view subdirectory per route branch
 common_logger :: Log received requests
@@ -87,12 +91,19 @@ not_found :: Show nice 404 error page
 exception_page :: Show detailed debugging page for internal errors in development
 error_handler :: Show appropriate error page for internal errors
 sessions :: Use encrypted cookie sessions
+autoload_hash_branches :: Autoload route files in development and when running
+                          individual tests
 
 == Sequel Plugins Used
 
 auto_validations :: Automatically validate model objects based on database schema
-prepared_statements :: Use prepared statements for inserts/updates for model objects
+require_valid_schema :: Do not allow loading model classes if table doesn't exist
 subclasses :: Freeze model classes in production and during testing
+
+== Sequel Database Extensions Used
+
+pg_auto_parameterize :: Automatically parameterize queries (if using the postgres
+                        adapter with the pg driver)
 
 == Environment Variables Used
 
