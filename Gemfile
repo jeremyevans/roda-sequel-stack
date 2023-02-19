@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'sassc', '>= 2'
-gem 'tilt', '>= 2.0.9'
+gem 'tilt', '>= 2.1'
 gem 'erubi', '>= 1.5'
 gem 'roda', '>= 3.63'
 gem 'refrigerator', '>= 1'
