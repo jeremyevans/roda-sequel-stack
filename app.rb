@@ -27,9 +27,16 @@ class App < Roda
     csp.frame_ancestors :none
   end
 
+  css_opts = {:cache=>false, :style=>:compressed}
+  # :nocov:
+  if ENV['RACK_ENV'] == 'development'
+    css_opts.merge!(:source_map_embed=>true, source_map_contents: true, source_map_file: ".")
+  end
+  # :nocov:
+
   plugin :route_csrf
   plugin :flash
-  plugin :assets, css: 'app.scss', css_opts: {style: :compressed, cache: false}, timestamp_paths: true
+  plugin :assets, css: 'app.scss', css_opts: css_opts, timestamp_paths: true
   plugin :render, escape: true, layout: './layout', :template_opts=>{chain_appends: true, freeze: true, skip_compiled_encoding_detection: true}
   plugin :public
   plugin :Integer_matcher_max
