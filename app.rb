@@ -2,7 +2,9 @@
 require_relative 'models'
 
 require 'roda'
-require 'tilt/sass'
+
+require 'tilt'
+require 'tilt/erubi'
 
 class App < Roda
   opts[:check_dynamic_arity] = false
@@ -28,7 +30,7 @@ class App < Roda
   plugin :route_csrf
   plugin :flash
   plugin :assets, css: 'app.scss', css_opts: {style: :compressed, cache: false}, timestamp_paths: true
-  plugin :render, escape: true, layout: './layout', :template_opts=>{:freeze=>true}
+  plugin :render, escape: true, layout: './layout', :template_opts=>{chain_appends: true, freeze: true, skip_compiled_encoding_detection: true}
   plugin :public
   plugin :Integer_matcher_max
   plugin :typecast_params_sized_integers, :sizes=>[64], :default_size=>64
