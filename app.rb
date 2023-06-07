@@ -32,12 +32,13 @@ class App < Roda
   if ENV['RACK_ENV'] == 'development'
     css_opts.merge!(:source_map_embed=>true, source_map_contents: true, source_map_file: ".")
   end
+  plugin :render_coverage if defined?(SimpleCov)
   # :nocov:
 
   plugin :route_csrf
   plugin :flash
   plugin :assets, css: 'app.scss', css_opts: css_opts, timestamp_paths: true
-  plugin :render, escape: true, layout: './layout', :template_opts=>{chain_appends: true, freeze: true, skip_compiled_encoding_detection: true}
+  plugin :render, escape: true, layout: './layout', :template_opts=>{chain_appends: !defined?(SimpleCov), freeze: true, skip_compiled_encoding_detection: true}
   plugin :public
   plugin :Integer_matcher_max
   plugin :typecast_params_sized_integers, :sizes=>[64], :default_size=>64

@@ -97,7 +97,13 @@ desc "Run all specs"
 task default: [:model_spec, :web_spec]
 
 desc "Run all specs with coverage"
-task spec_cov: [:model_spec_cov, :web_spec_cov]
+task :spec_cov do
+  ENV['RODA_RENDER_COMPILED_METHOD_SUPPORT'] = 'no'
+  FileUtils.rm_r('coverage') if File.directory?('coverage')
+  Dir.mkdir('coverage')
+  Rake::Task['_spec_cov'].invoke
+end
+task _spec_cov: [:model_spec_cov, :web_spec_cov]
 
 # Other
 
