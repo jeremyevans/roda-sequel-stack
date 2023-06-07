@@ -19,7 +19,7 @@ class App < Roda
 
   plugin :content_security_policy do |csp|
     csp.default_src :none
-    csp.style_src :self, 'https://maxcdn.bootstrapcdn.com'
+    csp.style_src :self, 'https://cdn.jsdelivr.net'
     csp.form_action :self
     csp.script_src :self
     csp.connect_src :self
