@@ -14,6 +14,7 @@ run(dev ? Unreloader : App.freeze.app)
 unless dev
   require 'tilt/sass' unless File.exist?(File.expand_path('../compiled_assets.json', __FILE__))
   Tilt.finalize!
+  RubyVM::YJIT.enable if defined?(RubyVM::YJIT.enable)
 end
 
 freeze_core = false
