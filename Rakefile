@@ -164,7 +164,7 @@ task :default do
   sh "#{FileUtils::RUBY} -w stack-spec/stack_spec.rb"
 end
 
-desc "Run specs to make sure stack works properly"
+desc "Run specs to make sure stack works properly, with debugging enabled"
 task :stack_spec_debug do
   ENV['DEBUG'] = '1'
   sh "#{FileUtils::RUBY} -w stack-spec/stack_spec.rb"
