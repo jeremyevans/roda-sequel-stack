@@ -34,12 +34,8 @@ if freeze_core
     #require 'forwardable'
     #require 'webrick'
 
-    # rackup -s Puma
-    #require 'yaml' 
-    #Gem.ruby
-
-    # Puma (needed for state file)
-    #require 'yaml'
+    # Puma
+    require 'nio' if defined?(Puma)
 
     # Unicorn (no changes needed)
 

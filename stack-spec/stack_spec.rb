@@ -10,7 +10,7 @@ require 'find'
 TEST_STACK_DIR = 'test-stack'.freeze
 RUBY = ENV['RUBY'] || (RUBY_ENGINE == 'jruby' ? 'jruby' : 'ruby')
 RAKE = ENV['RAKE'] || 'rake'
-RACKUP = ENV['RACKUP'] || 'rackup'
+PUMA = ENV['PUMA'] || 'puma'
 SEQUEL = ENV['SEQUEL'] || 'sequel'
 
 describe 'roda-sequel-stack' do
@@ -47,14 +47,14 @@ describe 'roda-sequel-stack' do
     end
   end
 
-  def run_rackup(*args)
+  def run_puma(*args)
     read, write = IO.pipe
-    args = [RACKUP, '-e', '$stderr.sync = $stdout.sync = true', *args]
+    args = [PUMA, *args]
     command(args)
     pid = Process.spawn(*args, out: write, err: write)
     read.each_line do |line|
       progress(line)
-      break if line =~ /Use Ctrl-C to stop|WEBrick::HTTPServer#start/
+      break if line =~ /Use Ctrl-C to stop/
     end
 
     Net::HTTP.get(URI('http://127.0.0.1:9292/')).must_include 'Hello World!'
@@ -132,7 +132,7 @@ describe 'roda-sequel-stack' do
       run_cmd(SEQUEL, db_url, '-c', "DB[:model1s].insert(name: 'M1')")
 
       # Test running in development mode
-      run_rackup
+      run_puma
 
       # Test annotation
       run_cmd(RAKE, 'annotate')
@@ -143,7 +143,7 @@ describe 'roda-sequel-stack' do
           gsub("#require", "require").
           sub('#Gem', 'Gem')
       end
-      run_rackup('-E', 'production', '-s', 'webrick')
+      run_puma('-e', 'production')
 
       # Test running full specs
       run_cmd(RAKE)
