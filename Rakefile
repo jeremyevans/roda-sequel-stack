@@ -80,7 +80,7 @@ end
 spec = proc do |type|
   desc "Run #{type} specs"
   task :"#{type}_spec" do
-    sh "#{FileUtils::RUBY} -w spec/#{type}.rb"
+    sh "#{FileUtils::RUBY} -w #{'-W:strict_unused_block' if RUBY_VERSION >= '3.4'} spec/#{type}.rb"
   end
 
   desc "Run #{type} specs with coverage"
@@ -161,7 +161,7 @@ end
 Rake::Task["default"].clear
 desc "Run specs to make sure stack works properly"
 task :default do
-  sh "#{FileUtils::RUBY} -w stack-spec/stack_spec.rb"
+  sh "#{FileUtils::RUBY} -w #{'-W:strict_unused_block' if RUBY_VERSION >= '3.4'} stack-spec/stack_spec.rb"
 end
 
 desc "Run specs to make sure stack works properly, with debugging enabled"
