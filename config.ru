@@ -24,21 +24,7 @@ if freeze_core
     require 'refrigerator'
   rescue LoadError
   else
-
-    # When enabling refrigerator, you may need to load additional
-    # libraries before freezing the core to work correctly.  You'll
-    # want to uncomment the appropriate lines below if you run into
-    # problems after enabling refrigerator.
-
-    # rackup -s webrick
-    #require 'forwardable'
-    #require 'webrick'
-
-    # Puma
     require 'nio' if defined?(Puma)
-
-    # Unicorn (no changes needed)
-
     Refrigerator.freeze_core
   end
 end
