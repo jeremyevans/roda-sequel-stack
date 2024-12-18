@@ -118,8 +118,6 @@ RACK_ENV :: environment to use (production, development, or test), defaults
 To run the specs for the application after running <tt>rake setup</tt>,
 run +rake+.  To run specs for the stack itself (to test if the stack itself
 is functioning as expected), run +rake+ before running <tt>rake setup</tt>.
-The specs for the stack itself depend on the gems in +Gemfile+, as well
-as the +rackup+ and +webrick+ gems (+puma+ will also be used if installed).
 
 == Author
 
