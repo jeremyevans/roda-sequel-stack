@@ -1,9 +1,9 @@
 source 'https://rubygems.org'
 
 gem 'sassc', '>= 2'
-gem 'tilt', '>= 2.2'
+gem 'tilt', '>= 2.6'
 gem 'erubi', '>= 1.5'
-gem 'roda', '>= 3.66'
+gem 'roda', '>= 3.89'
 gem 'refrigerator', '>= 1'
 gem 'sequel', '>= 5.62'
 gem 'sequel_pg', '>= 1.8', require: 'sequel'

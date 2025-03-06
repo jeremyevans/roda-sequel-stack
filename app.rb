@@ -37,7 +37,7 @@ class App < Roda
   plugin :route_csrf
   plugin :flash
   plugin :assets, css: 'app.scss', css_opts: css_opts, timestamp_paths: true
-  plugin :render, escape: true, layout: './layout', :template_opts=>{chain_appends: !defined?(SimpleCov), freeze: true, skip_compiled_encoding_detection: true}
+  plugin :render, escape: true, layout: './layout', :assume_fixed_locals=>true, :template_opts=>{chain_appends: !defined?(SimpleCov), freeze: true, skip_compiled_encoding_detection: true, scope_class: self, default_fixed_locals: '()', extract_fixed_locals: true}
   plugin :public
   plugin :Integer_matcher_max
   plugin :typecast_params_sized_integers, :sizes=>[64], :default_size=>64
