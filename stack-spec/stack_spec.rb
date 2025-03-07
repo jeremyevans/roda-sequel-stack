@@ -70,7 +70,9 @@ describe 'roda-sequel-stack' do
 
   # Run command capturing stderr/stdout
   def run_cmd(*cmds)
+    env = cmds.shift if cmds.first.is_a?(Hash)
     command(cmds)
+    cmds.unshift(env) if env
     read, write = IO.pipe
     system(*cmds, out: write, err: write).tap{|x| unless x; write.close; p cmds; puts read.read; end}.must_equal true
     write.close
@@ -87,7 +89,10 @@ describe 'roda-sequel-stack' do
 
     Dir.chdir(TEST_STACK_DIR) do
       run_cmd(RAKE, 'setup[FooBarApp]')
-      ENV['FOO_BAR_APP_DATABASE_URL'] = db_url
+      environments = %w[development test production].freeze
+      rewrite(".env.rb") do |content|
+        content.gsub(%r"postgres:///foo_bar_app_(\w+)\?user=foo_bar_app", "#{db_url}_\\1")
+      end
 
       files = []
       directories = []
@@ -118,24 +123,29 @@ describe 'roda-sequel-stack' do
       end
 
       # Test migrations
-      run_cmd(RAKE, 'test_up')
-      run_cmd(RAKE, 'test_down')
-      run_cmd(RAKE, 'test_bounce')
-      run_cmd(RAKE, 'dev_up')
-      run_cmd(RAKE, 'dev_down')
-      run_cmd(RAKE, 'dev_bounce')
+      run_cmd(RAKE, 'test_up', 'dev_up')
+      run_cmd(RAKE, 'test_down', 'dev_down')
+      run_cmd(RAKE, 'test_bounce', 'dev_bounce')
       run_cmd(RAKE, 'prod_up')
+
+      environments.each do |env|
+        run_cmd({"RACK_ENV"=>env}, RUBY, "-r", "./db", "-e", "raise \"migration rake tasks not successful for #{env} environment, tables: \#{DB.tables.sort.join(', ')}\" unless DB.tables.sort == [:model1s, :schema_info]")
+      end
       
       Dir.mkdir('views/prefix1')
       File.binwrite('views/prefix1/p1.erb', "<p>Model1: <%= Model1.first.name %></p>")
       rewrite('routes/prefix1.rb'){|s| s.sub("# /prefix1 branch handling", "r.get{view 'p1'}")}
-      run_cmd(SEQUEL, db_url, '-c', "DB[:model1s].insert(name: 'M1')")
+      environments.each do |env|
+        run_cmd(SEQUEL, "#{db_url}_#{env}", '-c', "DB[:model1s].insert(name: 'M1')")
+        run_cmd(SEQUEL, "#{db_url}_#{env}", '-c', "raise \"invalid count for models in #{env} environment\" unless DB[:model1s].count == 1")
+      end
 
       # Test running in development mode
       run_puma
 
       # Test annotation
       run_cmd(RAKE, 'annotate')
+      File.read("models/model1.rb").must_include "# Table: model1s"
 
       # Test running with refrigerator
       rewrite('config.ru') do |s|

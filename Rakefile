@@ -1,12 +1,11 @@
 # Migrate
 
 migrate = lambda do |env, version|
-  ENV['RACK_ENV'] = env
-  require_relative 'db'
-  require 'logger'
-  Sequel.extension :migration
-  DB.loggers << Logger.new($stdout) if DB.loggers.empty?
-  Sequel::Migrator.apply(DB, 'migrate', version)
+  sh({'RACK_ENV' => env}, FileUtils::RUBY, "-r", "./db", "-r", "logger", "-e", <<~RUBY)
+    Sequel.extension :migration
+    DB.loggers << Logger.new($stdout) if DB.loggers.empty?
+    Sequel::Migrator.apply(DB, 'migrate', #{version.inspect})
+  RUBY
 end
 
 desc "Migrate test database to latest version"
@@ -22,7 +21,7 @@ end
 desc "Migrate test database all the way down and then back up"
 task :test_bounce do
   migrate.call('test', 0)
-  Sequel::Migrator.apply(DB, 'migrate')
+  migrate.call('test', nil)
 end
 
 desc "Migrate development database to latest version"
@@ -38,7 +37,7 @@ end
 desc "Migrate development database all the way down and then back up"
 task :dev_bounce do
   migrate.call('development', 0)
-  Sequel::Migrator.apply(DB, 'migrate')
+  migrate.call('development', nil)
 end
 
 desc "Migrate production database to latest version"
@@ -49,15 +48,16 @@ end
 # Shell
 
 irb = proc do |env|
-  ENV['RACK_ENV'] = env
   trap('INT', "IGNORE")
   dir, base = File.split(FileUtils::RUBY)
   cmd = if base.sub!(/\Aruby/, 'irb')
-    File.join(dir, base)
+    [File.join(dir, base)]
   else
-    "#{FileUtils::RUBY} -S irb"
+    [FileUtils::RUBY, "-S", "irb"]
   end
-  sh "#{cmd} -r ./models"
+  cmd.unshift({"RACK_ENV" => env})
+  cmd << "-r" << "./models"
+  sh(*cmd)
 end
 
 desc "Open irb shell in test mode"
@@ -85,9 +85,7 @@ spec = proc do |type|
 
   desc "Run #{type} specs with coverage"
   task :"#{type}_spec_cov" do
-    ENV['COVERAGE'] = type
-    sh "#{FileUtils::RUBY} spec/#{type}.rb"
-    ENV.delete('COVERAGE')
+    sh({"COVERAGE" => type, "RODA_RENDER_COMPILED_METHOD_SUPPORT" => "no"}, FileUtils::RUBY, "spec/#{type}.rb")
   end
 end
 spec.call('model')
@@ -98,7 +96,6 @@ task default: [:model_spec, :web_spec]
 
 desc "Run all specs with coverage"
 task :spec_cov do
-  ENV['RODA_RENDER_COMPILED_METHOD_SUPPORT'] = 'no'
   FileUtils.rm_r('coverage') if File.directory?('coverage')
   Dir.mkdir('coverage')
   Rake::Task['_spec_cov'].invoke
@@ -109,11 +106,10 @@ task _spec_cov: [:model_spec_cov, :web_spec_cov]
 
 desc "Annotate Sequel models"
 task "annotate" do
-  ENV['RACK_ENV'] = 'development'
-  require_relative 'models'
-  DB.loggers.clear
-  require 'sequel/annotate'
-  Sequel::Annotate.annotate(Dir['models/**/*.rb'])
+  sh({'RACK_ENV' => "test"}, FileUtils::RUBY, "-r", "./models", "-r", "sequel/annotate", "-e", <<~RUBY)
+    DB.loggers.clear
+    Sequel::Annotate.annotate(Dir['models/**/*.rb'])
+  RUBY
 end
 
 last_line = __LINE__
@@ -166,6 +162,5 @@ end
 
 desc "Run specs to make sure stack works properly, with debugging enabled"
 task :stack_spec_debug do
-  ENV['DEBUG'] = '1'
-  sh "#{FileUtils::RUBY} -w stack-spec/stack_spec.rb"
+  sh({"DEBUG" => '1'}, FileUtils::RUBY, "-w", "stack-spec/stack_spec.rb")
 end
