@@ -150,6 +150,7 @@ END
   File.write('.gitignore', "/.env.rb\n/coverage\n")
   File.delete('public/.gitkeep')
   File.delete('.ci.gemfile')
+  File.delete('LICENSE')
   FileUtils.remove_dir('stack-spec')
   FileUtils.remove_dir('.github')
 end
