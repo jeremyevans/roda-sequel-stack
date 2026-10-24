@@ -49,7 +49,7 @@ describe 'roda-sequel-stack' do
 
   def run_puma(*args)
     read, write = IO.pipe
-    args = [PUMA, *args]
+    args = [PUMA, "-b", "tcp://127.0.0.1:9292", *args]
     command(args)
     pid = Process.spawn(*args, out: write, err: write)
     read.each_line do |line|
