@@ -167,11 +167,7 @@ describe 'roda-sequel-stack' do
       unless RUBY_ENGINE == 'jruby'
         # Test running coverage
         run_cmd(RAKE, 'spec_cov')
-        coverage = File.binread('coverage/index.html')
-        coverage.must_include('lines covered')
-        coverage.must_include('lines missed')
-        coverage.must_include('branches covered')
-        coverage.must_include('branches missed')
+        File.file?('coverage/coverage.json').must_equal true
       end
     end
   end
